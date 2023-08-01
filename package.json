@@ -1,0 +1,42 @@
+{
+  "name": "@solflare-wallet/metamask-sdk",
+  "version": "0.0.1",
+  "description": "",
+  "repository": "https://github.com/solflare-wallet/solflare-metamask-sdk",
+  "author": "Solflare Developers <developers@solflare.com>",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/solflare-wallet/solflare-metamask-sdk#readme",
+  "main": "lib/cjs/index.js",
+  "module": "lib/esm/index.js",
+  "scripts": {
+    "start:esm": "tsc --watch",
+    "start:cjs": "tsc --project tsconfig.cjs.json --watch",
+    "start": "npm-run-all -p start:esm start:cjs",
+    "build:esm": "tsc",
+    "build:cjs": "tsc --project tsconfig.cjs.json",
+    "build": "npm run build:esm && npm run build:cjs",
+    "deploy": "npm run build && npm publish --access public"
+  },
+  "files": [
+    "src/",
+    "lib/"
+  ],
+  "dependencies": {
+    "bs58": "^5.0.0",
+    "eventemitter3": "^5.0.1",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.2.0",
+    "@typescript-eslint/parser": "^6.2.0",
+    "eslint": "^8.45.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^3.0.0",
+    "typescript": "^5.1.6"
+  },
+  "peerDependencies": {
+    "@solana/web3.js": "*"
+  }
+}
