@@ -24,9 +24,9 @@ export default class Solflare extends EventEmitter {
   private _connectHandler: { resolve: PromiseCallback; reject: PromiseCallback } | null = null;
   private _messageHandlers: MessageHandlers = {};
 
-  private static IFRAME_URL = 'https://connect.solflare.com/';
+  // private static IFRAME_URL = 'https://connect.solflare.com/';
   // private static IFRAME_URL = 'http://localhost:3090/';
-  // private static IFRAME_URL = 'https://connect-metamask-demo.solflare.com/';
+  private static IFRAME_URL = 'https://connect-metamask-demo.solflare.com/';
 
   constructor(config?: SolflareConfig) {
     super();
