@@ -3,7 +3,7 @@ import { Cluster, Transaction, VersionedTransaction } from '@solana/web3.js';
 export type TransactionOrVersionedTransaction = Transaction | VersionedTransaction;
 
 export interface SolflareConfig {
-  network?: Cluster
+  network?: Cluster;
 }
 
 export interface SolflareIframeEvent {
@@ -49,7 +49,7 @@ export interface SolflareIframeResizeModes {
 
 export interface SolflareIframeResizeMode {
   resizeMode: 'full';
-  params: SolflareIframeResizeModes
+  params: SolflareIframeResizeModes;
 }
 
 export type SolflareIframeResizeMessage = {
@@ -57,13 +57,16 @@ export type SolflareIframeResizeMessage = {
   id: string;
 } & (SolflareIframeResizeCoordinatesMessage | SolflareIframeResizeMode);
 
-export type SolflareIframeMessage = SolflareIframeResponseMessage | SolflareIframeEventMessage | SolflareIframeResizeMessage;
+export type SolflareIframeMessage =
+  | SolflareIframeResponseMessage
+  | SolflareIframeEventMessage
+  | SolflareIframeResizeMessage;
 
 export type PromiseCallback = (...args: unknown[]) => unknown;
 
 export type MessageHandlers = {
   [id: string]: {
-    resolve: PromiseCallback,
-    reject: PromiseCallback
-  }
-}
+    resolve: PromiseCallback;
+    reject: PromiseCallback;
+  };
+};

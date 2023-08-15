@@ -1,6 +1,6 @@
 {
   "name": "@solflare-wallet/metamask-sdk",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "",
   "repository": "https://github.com/solflare-wallet/solflare-metamask-sdk",
   "author": "Solflare Developers <developers@solflare.com>",
@@ -27,6 +27,7 @@
     "uuid": "^9.0.0"
   },
   "devDependencies": {
+    "@types/uuid": "^9.0.2",
     "@typescript-eslint/eslint-plugin": "^6.2.0",
     "@typescript-eslint/parser": "^6.2.0",
     "eslint": "^8.45.0",

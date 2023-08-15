@@ -15,7 +15,7 @@ import bs58 from 'bs58';
 import { v4 as uuidv4 } from 'uuid';
 import { addSignature, serializeTransaction, serializeTransactionMessage } from './utils';
 
-export default class Solflare extends EventEmitter {
+export default class SolflareMetamask extends EventEmitter {
   private _network: Cluster = 'mainnet-beta';
   private _element: HTMLElement | null = null;
   private _iframe: HTMLIFrameElement | null = null;
@@ -24,8 +24,6 @@ export default class Solflare extends EventEmitter {
   private _connectHandler: { resolve: PromiseCallback; reject: PromiseCallback } | null = null;
   private _messageHandlers: MessageHandlers = {};
 
-  // private static IFRAME_URL = 'https://connect.solflare.com/';
-  // private static IFRAME_URL = 'http://localhost:3090/';
   private static IFRAME_URL = 'https://connect-metamask-demo.solflare.com/';
 
   constructor(config?: SolflareConfig) {
@@ -162,7 +160,7 @@ export default class Solflare extends EventEmitter {
       const result = await this._sendIframeMessage({
         method: 'signMessage',
         params: {
-          data,
+          data: bs58.encode(data),
           display
         }
       });
@@ -294,8 +292,9 @@ export default class Solflare extends EventEmitter {
 
     const network = encodeURIComponent(this._network);
     const origin = encodeURIComponent(window.location.origin);
+    const title = encodeURIComponent(document.title);
 
-    const iframeUrl = `${Solflare.IFRAME_URL}?cluster=${network}&origin=${origin}`;
+    const iframeUrl = `${SolflareMetamask.IFRAME_URL}?cluster=${network}&origin=${origin}&title=${title}`;
 
     this._element = document.createElement('div');
     this._element.className = 'solflare-metamask-wallet-adapter-iframe';
