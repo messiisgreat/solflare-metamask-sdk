@@ -26,7 +26,7 @@ export default class SolflareMetamask extends EventEmitter {
   private _connectHandler: { resolve: PromiseCallback; reject: PromiseCallback } | null = null;
   private _messageHandlers: MessageHandlers = {};
 
-  private static IFRAME_URL = 'https://connect-metamask-demo.solflare.com/';
+  private static IFRAME_URL = 'https://comet-widget.solflare.com/';
 
   constructor(config?: SolflareMetamaskConfig) {
     super();
