@@ -1,12 +1,16 @@
 import React, { Component } from 'react';
-import Solflare from '../../';
+import SolflareMetamask from '../../';
 import { Transaction, Connection } from '@solana/web3.js';
 
 export default class App extends Component {
   constructor(props) {
     super(props);
 
-    this.solflare = new Solflare();
+    window.SolflareMetamaskParams = {
+      param1: 'yes'
+    };
+
+    this.solflare = new SolflareMetamask({ params: { param2: 214 } });
 
     this.connection = new Connection(
       'https://fittest-crimson-night.solana-mainnet.discover.quiknode.pro/ce5a19f97c9f96af9d395263ffb2bdba8ea007eb/',

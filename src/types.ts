@@ -2,8 +2,9 @@ import { Cluster, Transaction, VersionedTransaction } from '@solana/web3.js';
 
 export type TransactionOrVersionedTransaction = Transaction | VersionedTransaction;
 
-export interface SolflareConfig {
+export interface SolflareMetamaskConfig {
   network?: Cluster;
+  params?: Record<string, any>;
 }
 
 export interface SolflareIframeEvent {
@@ -70,3 +71,7 @@ export type MessageHandlers = {
     reject: PromiseCallback;
   };
 };
+
+export interface WindowWithParams extends Window {
+  SolflareMetamaskParams?: Record<string, any>;
+}
