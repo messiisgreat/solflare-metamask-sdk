@@ -11,35 +11,40 @@ export async function isSnapSupported(provider: EthereumProvider) {
 }
 
 export async function detectProvider() {
-  const provider: EthereumProvider | null = await detectEthereumProvider();
+  try {
+    const provider: EthereumProvider | null = await detectEthereumProvider();
 
-  if (!provider) {
+    if (!provider) {
+      return null;
+    }
+
+    if (provider.providers && Array.isArray(provider.providers)) {
+      const providers = provider.providers;
+
+      for (const provider of providers) {
+        if (await isSnapSupported(provider)) {
+          return provider;
+        }
+      }
+    }
+
+    if (provider.detected && Array.isArray(provider.detected)) {
+      const providers = provider.detected;
+
+      for (const provider of providers) {
+        if (await isSnapSupported(provider)) {
+          return provider;
+        }
+      }
+    }
+
+    if (await isSnapSupported(provider)) {
+      return provider;
+    }
+
+    return null;
+  } catch (error) {
+    console.error(error);
     return null;
   }
-
-  if (provider.providers && Array.isArray(provider.providers)) {
-    const providers = provider.providers;
-
-    for (const provider of providers) {
-      if (await isSnapSupported(provider)) {
-        return provider;
-      }
-    }
-  }
-
-  if (provider.detected && Array.isArray(provider.detected)) {
-    const providers = provider.detected;
-
-    for (const provider of providers) {
-      if (await isSnapSupported(provider)) {
-        return provider;
-      }
-    }
-  }
-
-  if (await isSnapSupported(provider)) {
-    return provider;
-  }
-
-  return null;
 }
