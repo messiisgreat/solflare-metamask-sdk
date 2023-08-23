@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import SolflareMetamask from '../../';
 import { Transaction, Connection } from '@solana/web3.js';
 
+SolflareMetamask.isSupported().then(console.log);
+
 export default class App extends Component {
   constructor(props) {
     super(props);

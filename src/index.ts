@@ -15,6 +15,7 @@ import EventEmitter from 'eventemitter3';
 import bs58 from 'bs58';
 import { v4 as uuidv4 } from 'uuid';
 import { addSignature, serializeTransaction, serializeTransactionMessage } from './utils';
+import { detectProvider } from './detectProvider';
 
 export default class SolflareMetamask extends EventEmitter {
   private _network: Cluster = 'mainnet-beta';
@@ -189,6 +190,11 @@ export default class SolflareMetamask extends EventEmitter {
 
   async sign(data: Uint8Array, display: 'hex' | 'utf8' = 'utf8'): Promise<Uint8Array> {
     return await this.signMessage(data, display);
+  }
+
+  static async isSupported(): Promise<boolean> {
+    const provider = await detectProvider();
+    return !!provider;
   }
 
   private _handleEvent = (event: SolflareIframeEvent) => {

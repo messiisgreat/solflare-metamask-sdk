@@ -75,3 +75,15 @@ export type MessageHandlers = {
 export interface WindowWithParams extends Window {
   SolflareMetamaskParams?: Record<string, any>;
 }
+
+export interface EthereumProvider {
+  once(eventName: string | symbol, listener: (...args: any[]) => void): this;
+  on(eventName: string | symbol, listener: (...args: any[]) => void): this;
+  off(eventName: string | symbol, listener: (...args: any[]) => void): this;
+  addListener(eventName: string | symbol, listener: (...args: any[]) => void): this;
+  removeListener(eventName: string | symbol, listener: (...args: any[]) => void): this;
+  removeAllListeners(event?: string | symbol): this;
+  request: (args: { method: string; params?: any }) => Promise<any>;
+  detected?: EthereumProvider[];
+  providers?: EthereumProvider[];
+}

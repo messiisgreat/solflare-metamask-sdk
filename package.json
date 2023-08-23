@@ -1,6 +1,6 @@
 {
   "name": "@solflare-wallet/metamask-sdk",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "",
   "repository": "https://github.com/solflare-wallet/solflare-metamask-sdk",
   "author": "Solflare Developers <developers@solflare.com>",
@@ -22,6 +22,7 @@
     "lib/"
   ],
   "dependencies": {
+    "@metamask/detect-provider": "^2.0.0",
     "bs58": "^5.0.0",
     "eventemitter3": "^5.0.1",
     "uuid": "^9.0.0"
