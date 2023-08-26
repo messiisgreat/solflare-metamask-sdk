@@ -99,12 +99,15 @@ export default class SolflareMetamask extends EventEmitter {
     try {
       const serializedMessage = serializeTransactionMessage(transaction);
 
-      const { signature } = (await this._sendIframeMessage({
+      const { signature } = await this._sendIframeMessage<{
+        publicKey: string;
+        signature: string;
+      }>({
         method: 'signTransaction',
         params: {
           message: bs58.encode(serializedMessage)
         }
-      })) as { publicKey: string; signature: string };
+      });
 
       addSignature(transaction, this.publicKey, bs58.decode(signature));
 
@@ -126,12 +129,15 @@ export default class SolflareMetamask extends EventEmitter {
         serializeTransactionMessage(transaction)
       );
 
-      const { signatures } = (await this._sendIframeMessage({
+      const { signatures } = await this._sendIframeMessage<{
+        publicKey: string;
+        signatures: string[];
+      }>({
         method: 'signAllTransactions',
         params: {
           messages: serializedMessages.map((message) => bs58.encode(message))
         }
-      })) as { publicKey: string; signatures: string[] };
+      });
 
       for (let i = 0; i < transactions.length; i++) {
         addSignature(transactions[i], this.publicKey, bs58.decode(signatures[i]));
@@ -154,15 +160,17 @@ export default class SolflareMetamask extends EventEmitter {
     try {
       const serializedTransaction = serializeTransaction(transaction);
 
-      const result = await this._sendIframeMessage({
-        method: 'signAndSendTransaction',
-        params: {
-          transaction: bs58.encode(serializedTransaction),
-          options
+      const { signature } = await this._sendIframeMessage<{ publicKey: string; signature: string }>(
+        {
+          method: 'signAndSendTransaction',
+          params: {
+            transaction: bs58.encode(serializedTransaction),
+            options
+          }
         }
-      });
+      );
 
-      return result as string;
+      return signature;
     } catch (e) {
       throw new Error(e?.toString?.() || 'Failed to sign and send transaction');
     }
@@ -174,15 +182,17 @@ export default class SolflareMetamask extends EventEmitter {
     }
 
     try {
-      const result = await this._sendIframeMessage({
-        method: 'signMessage',
-        params: {
-          data: bs58.encode(data),
-          display
+      const { signature } = await this._sendIframeMessage<{ publicKey: string; signature: string }>(
+        {
+          method: 'signMessage',
+          params: {
+            data: bs58.encode(data),
+            display
+          }
         }
-      });
+      );
 
-      return Uint8Array.from(bs58.decode(result as string));
+      return Uint8Array.from(bs58.decode(signature));
     } catch (e) {
       throw new Error(e?.toString?.() || 'Failed to sign message');
     }
@@ -372,7 +382,7 @@ export default class SolflareMetamask extends EventEmitter {
       : (params.height as string);
   };
 
-  private _sendIframeMessage = (data: SolflareIframeRequest) => {
+  private _sendIframeMessage = <T = any>(data: SolflareIframeRequest): Promise<T> => {
     if (!this.connected || !this.publicKey) {
       throw new Error('Wallet not connected');
     }
