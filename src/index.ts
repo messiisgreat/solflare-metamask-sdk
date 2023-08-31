@@ -2,7 +2,7 @@ import { Cluster, PublicKey, SendOptions } from '@solana/web3.js';
 import {
   MessageHandlers,
   PromiseCallback,
-  SolflareMetamaskConfig,
+  SolflareMetaMaskConfig,
   SolflareIframeEvent,
   SolflareIframeMessage,
   SolflareIframeRequest,
@@ -17,7 +17,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { addSignature, serializeTransaction, serializeTransactionMessage } from './utils';
 import { detectProvider } from './detectProvider';
 
-export default class SolflareMetamask extends EventEmitter {
+export default class SolflareMetaMask extends EventEmitter {
   private _network: Cluster = 'mainnet-beta';
   private _iframeParams: Record<string, any> = {};
   private _element: HTMLElement | null = null;
@@ -27,19 +27,19 @@ export default class SolflareMetamask extends EventEmitter {
   private _connectHandler: { resolve: PromiseCallback; reject: PromiseCallback } | null = null;
   private _messageHandlers: MessageHandlers = {};
 
-  private static IFRAME_URL = 'https://comet-widget.solflare.com/';
+  private static IFRAME_URL = 'https://widget.solflare.com/';
 
-  constructor(config?: SolflareMetamaskConfig) {
+  constructor(config?: SolflareMetaMaskConfig) {
     super();
 
     if (config?.network) {
       this._network = config?.network;
     }
 
-    if ((window as WindowWithParams).SolflareMetamaskParams) {
+    if ((window as WindowWithParams).SolflareMetaMaskParams) {
       this._iframeParams = {
         ...this._iframeParams,
-        ...(window as WindowWithParams).SolflareMetamaskParams
+        ...(window as WindowWithParams).SolflareMetaMaskParams
       };
     }
 
@@ -324,6 +324,8 @@ export default class SolflareMetamask extends EventEmitter {
 
     const params = {
       ...this._iframeParams,
+      mm: true,
+      v: 1,
       cluster: this._network || 'mainnet-beta',
       origin: window.location.origin || '',
       title: document.title || ''
@@ -333,7 +335,7 @@ export default class SolflareMetamask extends EventEmitter {
       .map((key) => `${key}=${encodeURIComponent(params[key])}`)
       .join('&');
 
-    const iframeUrl = `${SolflareMetamask.IFRAME_URL}?${queryString}`;
+    const iframeUrl = `${SolflareMetaMask.IFRAME_URL}?${queryString}`;
 
     this._element = document.createElement('div');
     this._element.className = 'solflare-metamask-wallet-adapter-iframe';

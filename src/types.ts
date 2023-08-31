@@ -2,7 +2,7 @@ import { Cluster, Transaction, VersionedTransaction } from '@solana/web3.js';
 
 export type TransactionOrVersionedTransaction = Transaction | VersionedTransaction;
 
-export interface SolflareMetamaskConfig {
+export interface SolflareMetaMaskConfig {
   network?: Cluster;
   params?: Record<string, any>;
 }
@@ -73,7 +73,7 @@ export type MessageHandlers = {
 };
 
 export interface WindowWithParams extends Window {
-  SolflareMetamaskParams?: Record<string, any>;
+  SolflareMetaMaskParams?: Record<string, any>;
 }
 
 export interface EthereumProvider {
