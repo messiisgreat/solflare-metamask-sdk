@@ -1,6 +1,6 @@
 {
   "name": "@solflare-wallet/metamask-sdk",
-  "version": "0.0.9",
+  "version": "1.0.0",
   "description": "",
   "repository": "https://github.com/solflare-wallet/solflare-metamask-sdk",
   "author": "Solflare Developers <developers@solflare.com>",
