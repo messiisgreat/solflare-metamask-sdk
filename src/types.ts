@@ -87,3 +87,7 @@ export interface EthereumProvider {
   detected?: EthereumProvider[];
   providers?: EthereumProvider[];
 }
+
+export interface WindowWithEthereum extends Window {
+  ethereum?: EthereumProvider;
+}

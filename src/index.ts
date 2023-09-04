@@ -17,6 +17,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { addSignature, serializeTransaction, serializeTransactionMessage } from './utils';
 import { detectProvider } from './detectProvider';
 
+export * from './types';
+
 export default class SolflareMetaMask extends EventEmitter {
   private _network: Cluster = 'mainnet-beta';
   private _iframeParams: Record<string, any> = {};

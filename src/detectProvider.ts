@@ -1,5 +1,4 @@
-import detectEthereumProvider from '@metamask/detect-provider';
-import { EthereumProvider } from './types';
+import { EthereumProvider, WindowWithEthereum } from './types';
 
 export async function isSnapSupported(provider: EthereumProvider) {
   try {
@@ -12,7 +11,7 @@ export async function isSnapSupported(provider: EthereumProvider) {
 
 export async function detectProvider() {
   try {
-    const provider: EthereumProvider | null = await detectEthereumProvider();
+    const provider = (window as WindowWithEthereum).ethereum;
 
     if (!provider) {
       return null;
