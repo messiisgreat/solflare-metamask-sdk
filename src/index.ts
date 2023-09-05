@@ -1,4 +1,4 @@
-import { Cluster, PublicKey, SendOptions } from '@solana/web3.js';
+import { Cluster, PublicKey, SendOptions, VersionedTransaction } from '@solana/web3.js';
 import {
   MessageHandlers,
   PromiseCallback,
@@ -16,8 +16,19 @@ import bs58 from 'bs58';
 import { v4 as uuidv4 } from 'uuid';
 import { addSignature, serializeTransaction, serializeTransactionMessage } from './utils';
 import { detectProvider } from './detectProvider';
+import {
+  SolanaSignAndSendTransactionInput,
+  SolanaSignAndSendTransactionOutput,
+  SolanaSignMessageInput,
+  SolanaSignMessageOutput,
+  SolanaSignTransactionInput,
+  SolanaSignTransactionOutput
+} from '@solana/wallet-standard-features';
+import { StandardSolflareMetaMaskWalletAccount } from './standard/account';
+import { isSolanaChain, SolanaChain } from './standard/solana';
 
 export * from './types';
+export * from './standard/account';
 
 export default class SolflareMetaMask extends EventEmitter {
   private _network: Cluster = 'mainnet-beta';
@@ -25,6 +36,7 @@ export default class SolflareMetaMask extends EventEmitter {
   private _element: HTMLElement | null = null;
   private _iframe: HTMLIFrameElement | null = null;
   private _publicKey: string | null = null;
+  private _account: StandardSolflareMetaMaskWalletAccount | null = null;
   private _isConnected = false;
   private _connectHandler: { resolve: PromiseCallback; reject: PromiseCallback } | null = null;
   private _messageHandlers: MessageHandlers = {};
@@ -57,6 +69,14 @@ export default class SolflareMetaMask extends EventEmitter {
     return this._publicKey ? new PublicKey(this._publicKey) : null;
   }
 
+  get standardAccount() {
+    return this._account;
+  }
+
+  get standardAccounts() {
+    return this._account ? [this._account] : [];
+  }
+
   get isConnected() {
     return this._isConnected;
   }
@@ -87,8 +107,6 @@ export default class SolflareMetaMask extends EventEmitter {
     });
 
     this._disconnected();
-
-    this.emit('disconnect');
   }
 
   async signTransaction(
@@ -224,7 +242,7 @@ export default class SolflareMetaMask extends EventEmitter {
             this._connectHandler = null;
           }
 
-          this.emit('connect', this.publicKey);
+          this._connected();
         } else {
           if (this._connectHandler) {
             this._connectHandler.reject();
@@ -232,8 +250,6 @@ export default class SolflareMetaMask extends EventEmitter {
           }
 
           this._disconnected();
-
-          this.emit('disconnect');
         }
         return;
       }
@@ -245,8 +261,6 @@ export default class SolflareMetaMask extends EventEmitter {
 
         this._disconnected();
 
-        this.emit('disconnect');
-
         return;
       }
       case 'accountChanged': {
@@ -254,8 +268,12 @@ export default class SolflareMetaMask extends EventEmitter {
           this._publicKey = event.data.publicKey;
 
           this.emit('accountChanged', this.publicKey);
+
+          this._standardConnected();
         } else {
           this.emit('accountChanged', undefined);
+
+          this._standardDisconnected();
         }
 
         return;
@@ -406,10 +424,143 @@ export default class SolflareMetaMask extends EventEmitter {
     });
   };
 
+  private _connected = () => {
+    this._isConnected = true;
+
+    this.emit('connect', this.publicKey);
+
+    this._standardConnected();
+  };
+
   private _disconnected = () => {
     this._publicKey = null;
     this._isConnected = false;
+
     window.removeEventListener('message', this._handleMessage, false);
     this._removeElement();
+
+    this.emit('disconnect');
+
+    this._standardDisconnected();
   };
+
+  private _standardConnected = () => {
+    if (!this.publicKey) {
+      return;
+    }
+
+    const address = this.publicKey.toString();
+
+    if (!this._account || this._account.address !== address) {
+      this._account = new StandardSolflareMetaMaskWalletAccount({
+        address,
+        publicKey: this.publicKey.toBytes()
+      });
+      this.emit('standard_change', { accounts: this.standardAccounts });
+    }
+  };
+
+  private _standardDisconnected = () => {
+    if (this._account) {
+      this._account = null;
+      this.emit('standard_change', { accounts: this.standardAccounts });
+    }
+  };
+
+  async standardSignAndSendTransaction(...inputs: SolanaSignAndSendTransactionInput[]) {
+    if (!this.connected) throw new Error('not connected');
+
+    const outputs: SolanaSignAndSendTransactionOutput[] = [];
+
+    if (inputs.length === 1) {
+      const { transaction, account, chain, options } = inputs[0]!;
+      const { minContextSlot, preflightCommitment, skipPreflight, maxRetries } = options || {};
+      if (account !== this._account) throw new Error('invalid account');
+      if (!isSolanaChain(chain)) throw new Error('invalid chain');
+
+      const signature = await this.signAndSendTransaction(
+        VersionedTransaction.deserialize(transaction),
+        {
+          preflightCommitment,
+          minContextSlot,
+          maxRetries,
+          skipPreflight
+        }
+      );
+
+      outputs.push({ signature: bs58.decode(signature) });
+    } else if (inputs.length > 1) {
+      for (const input of inputs) {
+        outputs.push(...(await this.standardSignAndSendTransaction(input)));
+      }
+    }
+
+    return outputs;
+  }
+
+  async standardSignTransaction(...inputs: SolanaSignTransactionInput[]) {
+    if (!this.connected) throw new Error('not connected');
+
+    const outputs: SolanaSignTransactionOutput[] = [];
+
+    if (inputs.length === 1) {
+      const { transaction, account, chain } = inputs[0]!;
+      if (account !== this._account) throw new Error('invalid account');
+      if (chain && !isSolanaChain(chain)) throw new Error('invalid chain');
+
+      const signedTransaction = await this.signTransaction(
+        VersionedTransaction.deserialize(transaction)
+      );
+
+      outputs.push({ signedTransaction: signedTransaction.serialize() });
+    } else if (inputs.length > 1) {
+      let chain: SolanaChain | undefined;
+      for (const input of inputs) {
+        if (input.account !== this._account) throw new Error('invalid account');
+        if (input.chain) {
+          if (!isSolanaChain(input.chain)) throw new Error('invalid chain');
+          if (chain) {
+            if (input.chain !== chain) throw new Error('conflicting chain');
+          } else {
+            chain = input.chain;
+          }
+        }
+      }
+
+      const transactions = inputs.map(({ transaction }) =>
+        VersionedTransaction.deserialize(transaction)
+      );
+
+      const signedTransactions = await this.signAllTransactions(transactions);
+
+      outputs.push(
+        ...signedTransactions.map((signedTransaction) => ({
+          signedTransaction: signedTransaction.serialize()
+        }))
+      );
+    }
+
+    return outputs;
+  }
+
+  async standardSignMessage(...inputs: SolanaSignMessageInput[]) {
+    if (!this.connected) throw new Error('not connected');
+
+    const outputs: SolanaSignMessageOutput[] = [];
+
+    if (inputs.length === 1) {
+      const { message, account } = inputs[0]!;
+      if (account !== this._account) throw new Error('invalid account');
+
+      const signature = await this.signMessage(message);
+
+      outputs.push({ signedMessage: message, signature });
+    } else if (inputs.length > 1) {
+      for (const input of inputs) {
+        outputs.push(...(await this.standardSignMessage(input)));
+      }
+    }
+
+    return outputs;
+  }
 }

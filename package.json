@@ -22,6 +22,8 @@
     "lib/"
   ],
   "dependencies": {
+    "@solana/wallet-standard-features": "^1.1.0",
+    "@wallet-standard/base": "^1.0.1",
     "bs58": "^5.0.0",
     "eventemitter3": "^5.0.1",
     "uuid": "^9.0.0"
