@@ -1,4 +1,4 @@
-import { Cluster, PublicKey, SendOptions, VersionedTransaction } from '@solana/web3.js';
+import { Cluster, PublicKey, SendOptions, Transaction, VersionedTransaction } from '@solana/web3.js';
 import {
   MessageHandlers,
   PromiseCallback,
@@ -14,7 +14,7 @@ import {
 import EventEmitter from 'eventemitter3';
 import bs58 from 'bs58';
 import { v4 as uuidv4 } from 'uuid';
-import { addSignature, serializeTransaction, serializeTransactionMessage } from './utils';
+import { isLegacyTransactionInstance, serializeTransaction } from './utils';
 import { detectProvider } from './detectProvider';
 import {
   SolanaSignAndSendTransactionInput,
@@ -117,21 +117,21 @@ export default class SolflareMetaMask extends EventEmitter {
     }
 
     try {
-      const serializedMessage = serializeTransactionMessage(transaction);
+      const serializedTransaction = serializeTransaction(transaction);
 
-      const { signature } = await this._sendIframeMessage<{
+      const response = await this._sendIframeMessage<{
         publicKey: string;
-        signature: string;
+        transaction: string;
       }>({
-        method: 'signTransaction',
+        method: 'signTransactionV2',
         params: {
-          message: bs58.encode(serializedMessage)
+          transaction: bs58.encode(serializedTransaction)
         }
       });
 
-      addSignature(transaction, this.publicKey, bs58.decode(signature));
+      const { transaction: signedTransaction } = response;
 
-      return transaction;
+      return isLegacyTransactionInstance(transaction) ? Transaction.from(bs58.decode(signedTransaction)) : VersionedTransaction.deserialize(bs58.decode(signedTransaction));
     } catch (e) {
       throw new Error(e?.toString?.() || 'Failed to sign transaction');
     }
@@ -145,25 +145,24 @@ export default class SolflareMetaMask extends EventEmitter {
     }
 
     try {
-      const serializedMessages = transactions.map((transaction) =>
-        serializeTransactionMessage(transaction)
+      const serializedTransactions = transactions.map((transaction) =>
+        serializeTransaction(transaction)
       );
 
-      const { signatures } = await this._sendIframeMessage<{
+      const { transactions: signedTransactions } = await this._sendIframeMessage<{
         publicKey: string;
-        signatures: string[];
+        transactions: string[];
       }>({
-        method: 'signAllTransactions',
+        method: 'signAllTransactionsV2',
         params: {
-          messages: serializedMessages.map((message) => bs58.encode(message))
+          transactions: serializedTransactions.map((transaction) => bs58.encode(transaction))
         }
       });
 
-      for (let i = 0; i < transactions.length; i++) {
-        addSignature(transactions[i], this.publicKey, bs58.decode(signatures[i]));
-      }
 
-      return transactions;
+      return signedTransactions.map((signedTransaction, index) => {
+        return isLegacyTransactionInstance(transactions[index]) ? Transaction.from(bs58.decode(signedTransaction)) : VersionedTransaction.deserialize(bs58.decode(signedTransaction));
+      });
     } catch (e) {
       throw new Error(e?.toString?.() || 'Failed to sign transactions');
     }

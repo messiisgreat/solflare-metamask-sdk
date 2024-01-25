@@ -1,6 +1,6 @@
 {
   "name": "@solflare-wallet/metamask-sdk",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "",
   "repository": "https://github.com/solflare-wallet/solflare-metamask-sdk",
   "author": "Solflare Developers <developers@solflare.com>",
@@ -15,7 +15,8 @@
     "build:esm": "tsc",
     "build:cjs": "tsc --project tsconfig.cjs.json",
     "build": "npm run build:esm && npm run build:cjs",
-    "deploy": "npm run build && npm publish --access public"
+    "deploy": "npm run build && npm publish --access public",
+    "deploy:next": "npm run build && npm publish --access public --tag next"
   },
   "files": [
     "src/",
